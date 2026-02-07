@@ -42,30 +42,42 @@ function startTimer() {
     updateTimerDisplay();
   }, 1000);
 }
-// RENDER
+
+function addCardToGrid(grid, card) {
+  const el = document.createElement("div");
+  el.className = "card";
+  el.dataset.cardId = card.id;
+  el.addEventListener("click", handleCardClick);
+
+  const cardInner = document.createElement("div");
+  cardInner.className = "card-inner";
+  el.appendChild(cardInner);
+
+  const cardFront = document.createElement("div");
+  cardFront.className = "card-front";
+  cardFront.textContent = "♦ ♠ ♣ ♥";
+  cardInner.appendChild(cardFront);
+
+  const cardBack = document.createElement("div");
+  cardBack.className = "card-back";
+  cardInner.appendChild(cardBack);
+
+  const emoji = document.createElement("div");
+  emoji.textContent = card.emoji;
+  cardBack.appendChild(emoji);
+
+  const name = document.createElement("div");
+  name.textContent = card.name;
+  cardBack.appendChild(name);
+
+  grid.appendChild(el);
+}
+
 function renderCards(cards) {
   const grid = document.getElementById("cardsGrid");
-  grid.innerHTML = "";
 
   cards.forEach((card) => {
-    const el = document.createElement("div");
-    el.className = "card";
-    el.dataset.cardId = card.id;
-
-    el.innerHTML = `
-      <div class="card-inner">
-        <div class="card-front">
-          ♦ ♠ ♣ ♥
-        </div>
-        <div class="card-back">
-          <div>${card.emoji}</div>
-          <div>${card.name}</div>
-        </div>
-      </div>
-    `;
-
-    el.addEventListener("click", handleCardClick);
-    grid.appendChild(el);
+    addCardToGrid(grid, card);
   });
 }
 let seconds = 0;
