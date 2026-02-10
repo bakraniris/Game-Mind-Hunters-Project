@@ -1,4 +1,11 @@
 let originalCards = [];
+let cards = [];
+let seconds = 0;
+let timerInterval = null;
+let timerStarted = false;
+let revealCount = 0;
+let currentDifficulty = null;
+let maxReveals = 30;
 
 async function getCards() {
   const response = await fetch("/cards");
@@ -14,7 +21,7 @@ function createPairs(cards) {
 }
 
 function shuffle(array) {
-  const shuffled = [...array]; // Create copy
+  const shuffled = [...array];
 
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -23,8 +30,6 @@ function shuffle(array) {
 
   return shuffled;
 }
-
-let cards = [];
 
 function shuffle(array) {
   const shuffled = [...array];
@@ -83,10 +88,23 @@ function renderCards(cards) {
   });
 }
 
-let seconds = 0;
-let timerInterval = null;
-let timerStarted = false;
-let revealCount = 0;
+function setMaxReveals() {
+  const numberOfCards = cards.length;
+
+  if (currentDifficulty == "easy") {
+    maxReveals = numberOfCards / 0.25;
+  } else if (currentDifficulty == "medium") {
+    maxReveals = numberOfCards / 0.4;
+  } else if (currentDifficulty == "hard") {
+    maxReveals = numberOfCards / 0.75;
+  } else {
+    maxReveals = numberOfCards / 0.25;
+  }
+
+  maxReveals = Math.round(maxReveals);
+
+  document.getElementById("revealMax").textContent = maxReveals;
+}
 
 function formatTime(totalSeconds) {
   const mins = Math.floor(totalSeconds / 60);
@@ -155,47 +173,105 @@ function checkForMatch() {
       flippedCards = [];
     }, 1000);
   }
+
+  checkFailureCondition();
 }
 
 function checkWinCondition() {
-  const TOTAL_PAIRS = originalCards.length;
-  if (matchedPairs === TOTAL_PAIRS) {
-    stopTimer();
-    const cardsGrid = document.getElementById("cardsGrid");
-    cardsGrid.style.display = "none";
-    while (cardsGrid.firstChild) {
-      cardsGrid.removeChild(cardsGrid.firstChild);
-    }
-    const victoryScreen = document.getElementById("victoryScreen");
-    victoryScreen.style.display = "block";
+  const numberOfCards = originalCards.length;
 
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ["#ffff00", "#ff0000", "#00ff00", "#0000ff"],
-    });
+  if (matchedPairs === numberOfCards) {
+    initVictoryScreen();
   }
 }
 
-async function initGame() {
-  console.log("Game start");
+function checkFailureCondition() {
+  console.log(revealCount, maxReveals);
+  if (revealCount >= maxReveals) {
+    initFailureScreen();
+  }
+}
+
+function initVictoryScreen() {
+  stopTimer();
+  const cardsGrid = document.getElementById("cardsGrid");
+  cardsGrid.style.display = "none";
+  while (cardsGrid.firstChild) {
+    cardsGrid.removeChild(cardsGrid.firstChild);
+  }
+  document.getElementById("victoryScreen").style.display = "block";
+  document.getElementById("failureScreen").style.display = "none";
+  document.getElementById("startScreen").style.display = "none";
+
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ["#ffff00", "#ff0000", "#00ff00", "#0000ff"],
+  });
+}
+
+function initFailureScreen() {
+  stopTimer();
+  const cardsGrid = document.getElementById("cardsGrid");
+  cardsGrid.style.display = "none";
+  while (cardsGrid.firstChild) {
+    cardsGrid.removeChild(cardsGrid.firstChild);
+  }
+  document.getElementById("victoryScreen").style.display = "none";
+  document.getElementById("failureScreen").style.display = "block";
+  document.getElementById("startScreen").style.display = "none";
+
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ["#ffff00", "#ff0000", "#00ff00", "#0000ff"],
+  });
+}
+
+function initStartScreen() {
+  document.getElementById("victoryScreen").style.display = "none";
+  document.getElementById("failureScreen").style.display = "none";
+  document.getElementById("cardsGrid").style.display = "none";
+  document.getElementById("startScreen").style.display = "block";
+}
+
+function initGameEasy() {
+  initGame("easy");
+}
+
+function initGameMedium() {
+  initGame("medium");
+}
+
+function initGameHard() {
+  initGame("hard");
+}
+
+async function initGame(difficulty = "easy") {
+  currentDifficulty = difficulty;
   flippedCards = [];
   matchedPairs = 0;
   revealCount = 0;
   seconds = 0;
   timerStarted = false;
 
+  console.log("Game start. Difficulty: ", currentDifficulty);
   clearInterval(timerInterval);
+
+  document.getElementById("victoryScreen").style.display = "none";
+  document.getElementById("failureScreen").style.display = "none";
+  document.getElementById("startScreen").style.display = "none";
+  document.getElementById("cardsGrid").style.display = "grid";
 
   document.getElementById("timer").textContent = "0";
   document.getElementById("revealCount").textContent = "0";
-  document.getElementById("victoryScreen").style.display = "none";
-  document.getElementById("cardsGrid").style.display = "grid";
 
   originalCards = await getCards();
   cards = shuffle(createPairs(originalCards));
   renderCards(cards);
+  setMaxReveals();
 }
 
-initGame();
+initStartScreen();

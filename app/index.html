@@ -10,11 +10,24 @@
     <div class="game-header">
       <div>Time: <span id="timer">0</span></div>
       <div>Reveals: <span id="revealCount">0</span></div>
+      <div>Max reveals: <span id="revealMax">0</span></div>
+    </div>
+    <div id="startScreen">
+      <h2>Select difficulty</h2>
+      <div class="difficulty-button-container">
+        <button onclick="initGameEasy()">Easy</button>
+        <button onclick="initGameMedium()">Medium</button>
+        <button onclick="initGameHard()">Hard</button>
+      </div>
     </div>
     <div id="cardsGrid"></div>
-    <div id="victoryScreen">
+    <div id="victoryScreen" class="game-over-screen">
       <h2>You won! Congratulations!</h2>
-      <button id="restartButton" onclick="initGame()">Restart</button>
+      <button class="restartButton" onclick="initStartScreen()">Restart</button>
+    </div>
+    <div id="failureScreen" class="game-over-screen">
+      <h2>You failed! Better luck next time!</h2>
+      <button class="restartButton" onclick="initStartScreen()">Restart</button>
     </div>
 
     <script src="./script.js"></script>
