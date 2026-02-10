@@ -82,6 +82,7 @@ function renderCards(cards) {
     addCardToGrid(grid, card);
   });
 }
+
 let seconds = 0;
 let timerInterval = null;
 let timerStarted = false;
@@ -113,7 +114,6 @@ function handleCardClick(event) {
     startTimer();
   }
 
-  // Don't count if card is already flipped or matched or 2 cards are already flipped
   if (
     card.classList.contains("flipped") ||
     card.classList.contains("matched") ||
@@ -122,18 +122,14 @@ function handleCardClick(event) {
     return;
   }
 
-  // Flip the card
   card.classList.add("flipped");
 
-  // Increment reveal count and update DOM
   revealCount++;
   const revealElement = document.getElementById("revealCount");
   if (revealElement) revealElement.textContent = revealCount;
 
-  // Add to flipped cards array
   flippedCards.push(card);
 
-  // Check for match when 2 cards are flipped
   if (flippedCards.length === 2) {
     checkForMatch();
   }
@@ -145,7 +141,6 @@ function checkForMatch() {
   const id2 = card2.dataset.cardId;
 
   if (id1 === id2) {
-    // Match: keep them flipped and mark as matched
     setTimeout(() => {
       card1.classList.add("matched");
       card2.classList.add("matched");
@@ -166,14 +161,25 @@ function checkWinCondition() {
   const TOTAL_PAIRS = originalCards.length;
   if (matchedPairs === TOTAL_PAIRS) {
     stopTimer();
-    setTimeout(() => {
-      const message = `🎉 You won!\nTime: ${formatTime(seconds)}`;
-      alert(message);
-    }, 500);
+    const cardsGrid = document.getElementById("cardsGrid");
+    cardsGrid.style.display = "none";
+    while (cardsGrid.firstChild) {
+      cardsGrid.removeChild(cardsGrid.firstChild);
+    }
+    const victoryScreen = document.getElementById("victoryScreen");
+    victoryScreen.style.display = "block";
+
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ["#ffff00", "#ff0000", "#00ff00", "#0000ff"],
+    });
   }
 }
 
 async function initGame() {
+  console.log("Game start");
   flippedCards = [];
   matchedPairs = 0;
   revealCount = 0;
@@ -184,6 +190,8 @@ async function initGame() {
 
   document.getElementById("timer").textContent = "0";
   document.getElementById("revealCount").textContent = "0";
+  document.getElementById("victoryScreen").style.display = "none";
+  document.getElementById("cardsGrid").style.display = "grid";
 
   originalCards = await getCards();
   cards = shuffle(createPairs(originalCards));
