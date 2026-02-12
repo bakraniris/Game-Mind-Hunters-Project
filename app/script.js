@@ -10,28 +10,14 @@ let maxReveals = 30;
 async function getCards() {
   const response = await fetch("/cards");
   const data = await response.json();
-
-  console.log(data);
   return data;
 }
-getCards();
 
-function createPairs(cards) {
+function createCardPairs(cards) {
   return [...cards, ...cards];
 }
 
-function shuffle(array) {
-  const shuffled = [...array];
-
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-
-  return shuffled;
-}
-
-function shuffle(array) {
+function shuffleCards(array) {
   const shuffled = [...array];
 
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -50,34 +36,38 @@ function startTimer() {
   }, 1000);
 }
 
+function createDiv(className, textContent = null) {
+  const element = document.createElement("div");
+  if (className != null) {
+    element.className = className;
+  }
+  if (textContent != null) {
+    element.textContent = textContent;
+  }
+  return element;
+}
+
 function addCardToGrid(grid, card) {
-  const el = document.createElement("div");
-  el.className = "card";
-  el.dataset.cardId = card.id;
-  el.addEventListener("click", handleCardClick);
+  const mainContainer = createDiv("card");
+  mainContainer.dataset.cardId = card.id;
+  mainContainer.addEventListener("click", handleCardClick);
 
-  const cardInner = document.createElement("div");
-  cardInner.className = "card-inner";
-  el.appendChild(cardInner);
+  const cardInner = createDiv("card-inner");
+  mainContainer.appendChild(cardInner);
 
-  const cardFront = document.createElement("div");
-  cardFront.className = "card-front";
-  cardFront.textContent = "♦ ♠ ♣ ♥";
+  const cardFront = createDiv("card-front", "♦ ♠ ♣ ♥");
   cardInner.appendChild(cardFront);
 
-  const cardBack = document.createElement("div");
-  cardBack.className = "card-back";
+  const cardBack = createDiv("card-back");
   cardInner.appendChild(cardBack);
 
-  const emoji = document.createElement("div");
-  emoji.textContent = card.emoji;
+  const emoji = createDiv(null, card.emoji);
   cardBack.appendChild(emoji);
 
-  const name = document.createElement("div");
-  name.textContent = card.name;
+  const name = createDiv(null, card.name);
   cardBack.appendChild(name);
 
-  grid.appendChild(el);
+  grid.appendChild(mainContainer);
 }
 
 function renderCards(cards) {
@@ -186,22 +176,25 @@ function checkWinCondition() {
 }
 
 function checkFailureCondition() {
-  console.log(revealCount, maxReveals);
   if (revealCount >= maxReveals) {
     initFailureScreen();
   }
 }
 
-function initVictoryScreen() {
+function doEndgameCleanup() {
   stopTimer();
   const cardsGrid = document.getElementById("cardsGrid");
   cardsGrid.style.display = "none";
   while (cardsGrid.firstChild) {
     cardsGrid.removeChild(cardsGrid.firstChild);
   }
+}
+
+function initVictoryScreen() {
+  doEndgameCleanup();
+
   document.getElementById("victoryScreen").style.display = "block";
   document.getElementById("failureScreen").style.display = "none";
-  document.getElementById("startScreen").style.display = "none";
 
   confetti({
     particleCount: 100,
@@ -212,22 +205,10 @@ function initVictoryScreen() {
 }
 
 function initFailureScreen() {
-  stopTimer();
-  const cardsGrid = document.getElementById("cardsGrid");
-  cardsGrid.style.display = "none";
-  while (cardsGrid.firstChild) {
-    cardsGrid.removeChild(cardsGrid.firstChild);
-  }
+  doEndgameCleanup();
+
   document.getElementById("victoryScreen").style.display = "none";
   document.getElementById("failureScreen").style.display = "block";
-  document.getElementById("startScreen").style.display = "none";
-
-  confetti({
-    particleCount: 100,
-    spread: 70,
-    origin: { y: 0.6 },
-    colors: ["#ffff00", "#ff0000", "#00ff00", "#0000ff"],
-  });
 }
 
 function initStartScreen() {
@@ -235,18 +216,6 @@ function initStartScreen() {
   document.getElementById("failureScreen").style.display = "none";
   document.getElementById("cardsGrid").style.display = "none";
   document.getElementById("startScreen").style.display = "block";
-}
-
-function initGameEasy() {
-  initGame("easy");
-}
-
-function initGameMedium() {
-  initGame("medium");
-}
-
-function initGameHard() {
-  initGame("hard");
 }
 
 async function initGame(difficulty = "easy") {
@@ -269,7 +238,7 @@ async function initGame(difficulty = "easy") {
   document.getElementById("revealCount").textContent = "0";
 
   originalCards = await getCards();
-  cards = shuffle(createPairs(originalCards));
+  cards = shuffleCards(createCardPairs(originalCards));
   renderCards(cards);
   setMaxReveals();
 }

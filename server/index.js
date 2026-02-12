@@ -10,11 +10,6 @@ const db = knex({
   useNullAsDefault: true, // Required for SQLite
 });
 
-app.get("/users", async function (request, response) {
-  const rows = await db.raw("SELECT * FROM users");
-  response.json(rows);
-});
-
 app.get("/cards", async function (request, response) {
   const rows = await db.raw("SELECT * FROM cards");
   response.json(rows);
