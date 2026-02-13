@@ -9,7 +9,7 @@ const TIME_SECONDS_PER_MINUTE = 60;
 const TIME_PAD_LENGTH = 2;
 const DIFFICULTY_FACTOR_EASY = 0.25;
 const DIFFICULTY_FACTOR_MEDIUM = 0.4;
-const DIFFICULTY_FACTOR_HARD = 0.75;
+const DIFFICULTY_FACTOR_HARD = 0.6;
 
 let originalCards = [];
 let cards = [];
@@ -109,7 +109,9 @@ function addCardToGrid(grid, card) {
 }
 
 function renderCards(cards) {
-  cardsGridElement.innerHTML = "";
+  while (cardsGridElement.firstChild) {
+    cardsGridElement.removeChild(cardsGridElement.firstChild);
+  }
   cards.forEach((card) => addCardToGrid(cardsGridElement, card));
 }
 
@@ -197,7 +199,9 @@ function checkFailureCondition() {
 function doEndgameCleanup() {
   stopTimer();
   cardsGridElement.style.display = "none";
-  cardsGridElement.innerHTML = "";
+  while (cardsGridElement.firstChild) {
+    cardsGridElement.removeChild(cardsGridElement.firstChild);
+  }
 }
 
 function initVictoryScreen() {

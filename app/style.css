@@ -20,6 +20,7 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-top: 30px;
+  margin-bottom: 30px;
   font-family: "Segoe UI", sans-serif;
   color: var(--primary-color);
   border: 3px solid var(--secondary-color);
@@ -121,6 +122,10 @@ body {
     align-items: center;
     text-align: center;
   }
+  .card {
+    width: 80px;
+    height: 100px;
+  }
 }
 .card:hover {
   transform: scale(1.05);
@@ -160,7 +165,7 @@ body {
   justify-content: center;
   align-items: center;
   gap: 90px;
-  margin-top: 30px;
+  margin-top: 0;
   font-family: "Segoe UI", sans-serif;
   color: var(--primary-color);
   border: 3px solid var(--secondary-color);
@@ -173,8 +178,15 @@ body {
     var(--header-gradient-end) 100%
   );
   max-width: 600px;
+  width: 100%;
+  box-sizing: border-box;
   margin-left: auto;
   margin-right: auto;
+}
+
+.game-over-screen h2 {
+  text-align: center;
+  width: 100%;
 }
 #startScreen {
   display: flex;
