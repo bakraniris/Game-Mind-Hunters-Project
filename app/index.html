@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Game</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="game-header">
+      <div>Time: <span id="timer">0</span></div>
+      <div>Reveals: <span id="revealCount">0</span></div>
+      <div>Max reveals: <span id="revealMax">0</span></div>
+    </div>
+    <div id="startScreen">
+      <h2>Select difficulty</h2>
+      <div class="difficulty-button-container">
+        <button onclick="initGame('easy')">Easy</button>
+        <button onclick="initGame('medium')">Medium</button>
+        <button onclick="initGame('hard')">Hard</button>
+      </div>
+    </div>
+    <div id="cardsGrid"></div>
+    <div id="victoryScreen" class="game-over-screen">
+      <h2>You won!</h2>
+      <h2>Congratulations!</h2>
+      <button class="restartButton" onclick="initStartScreen()">Restart</button>
+    </div>
+    <div id="failureScreen" class="game-over-screen">
+      <h2>You failed!</h2>
+      <h2>Better luck next time!</h2>
+      <button class="restartButton" onclick="initStartScreen()">Restart</button>
+    </div>
+
+    <script src="./script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  </body>
+</html>
