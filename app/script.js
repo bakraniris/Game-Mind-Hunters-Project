@@ -1,11 +1,34 @@
+// Timing and game logic constants
+const FLIP_BACK_DELAY = 1000;
+const MATCH_DELAY = 500;
+const TIMER_INTERVAL = 1000;
+const DEFAULT_MAX_REVEALS = 30;
+
+// Magic numbers as named constants
+const TIME_SECONDS_PER_MINUTE = 60;
+const TIME_PAD_LENGTH = 2;
+const DIFFICULTY_FACTOR_EASY = 0.25;
+const DIFFICULTY_FACTOR_MEDIUM = 0.4;
+const DIFFICULTY_FACTOR_HARD = 0.75;
+
 let originalCards = [];
 let cards = [];
+let flippedCards = [];
+let matchedPairs = 0;
 let seconds = 0;
 let timerInterval = null;
 let timerStarted = false;
 let revealCount = 0;
 let currentDifficulty = null;
-let maxReveals = 30;
+let maxReveals = DEFAULT_MAX_REVEALS;
+
+const timerElement = document.getElementById("timer");
+const revealCountElement = document.getElementById("revealCount");
+const revealMaxElement = document.getElementById("revealMax");
+const cardsGridElement = document.getElementById("cardsGrid");
+const victoryScreenElement = document.getElementById("victoryScreen");
+const failureScreenElement = document.getElementById("failureScreen");
+const startScreenElement = document.getElementById("startScreen");
 
 async function getCards() {
   const response = await fetch("/cards");
@@ -19,12 +42,18 @@ function createCardPairs(cards) {
 
 function shuffleCards(array) {
   const shuffled = [...array];
-
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
+}
+
+function createDiv(className, textContent = null) {
+  const element = document.createElement("div");
+  if (className) element.className = className;
+  if (textContent) element.textContent = textContent;
+  return element;
 }
 
 function startTimer() {
@@ -33,18 +62,27 @@ function startTimer() {
   timerInterval = setInterval(() => {
     seconds++;
     updateTimerDisplay();
-  }, 1000);
+  }, TIMER_INTERVAL);
 }
 
-function createDiv(className, textContent = null) {
-  const element = document.createElement("div");
-  if (className != null) {
-    element.className = className;
-  }
-  if (textContent != null) {
-    element.textContent = textContent;
-  }
-  return element;
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerStarted = false;
+}
+
+function formatTime(totalSeconds) {
+  const mins = Math.floor(totalSeconds / TIME_SECONDS_PER_MINUTE);
+  const secs = totalSeconds % TIME_SECONDS_PER_MINUTE;
+  return `${mins}:${secs.toString().padStart(TIME_PAD_LENGTH, "0")}`;
+}
+
+function updateTimerDisplay() {
+  timerElement.textContent = formatTime(seconds);
+}
+
+function incrementRevealCount() {
+  revealCount++;
+  revealCountElement.textContent = revealCount;
 }
 
 function addCardToGrid(grid, card) {
@@ -71,56 +109,36 @@ function addCardToGrid(grid, card) {
 }
 
 function renderCards(cards) {
-  const grid = document.getElementById("cardsGrid");
-
-  cards.forEach((card) => {
-    addCardToGrid(grid, card);
-  });
+  cardsGridElement.innerHTML = "";
+  cards.forEach((card) => addCardToGrid(cardsGridElement, card));
 }
 
 function setMaxReveals() {
   const numberOfCards = cards.length;
+  let factor;
 
-  if (currentDifficulty == "easy") {
-    maxReveals = numberOfCards / 0.25;
-  } else if (currentDifficulty == "medium") {
-    maxReveals = numberOfCards / 0.4;
-  } else if (currentDifficulty == "hard") {
-    maxReveals = numberOfCards / 0.75;
-  } else {
-    maxReveals = numberOfCards / 0.25;
+  switch (currentDifficulty) {
+    case "easy":
+      factor = DIFFICULTY_FACTOR_EASY;
+      break;
+    case "medium":
+      factor = DIFFICULTY_FACTOR_MEDIUM;
+      break;
+    case "hard":
+      factor = DIFFICULTY_FACTOR_HARD;
+      break;
+    default:
+      factor = DIFFICULTY_FACTOR_EASY;
   }
 
-  maxReveals = Math.round(maxReveals);
-
-  document.getElementById("revealMax").textContent = maxReveals;
-}
-
-function formatTime(totalSeconds) {
-  const mins = Math.floor(totalSeconds / 60);
-  const secs = totalSeconds % 60;
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-}
-
-function updateTimerDisplay() {
-  document.getElementById("timer").textContent = formatTime(seconds);
-}
-
-function stopTimer() {
-  clearInterval(timerInterval);
-  timerStarted = false;
-}
-
-function incrementRevealCount() {
-  revealCount++;
-  document.getElementById("revealCount").textContent = revealCount;
+  maxReveals = Math.round(numberOfCards / factor);
+  revealMaxElement.textContent = maxReveals;
 }
 
 function handleCardClick(event) {
   const card = event.currentTarget;
-  if (!timerStarted) {
-    startTimer();
-  }
+
+  if (!timerStarted) startTimer();
 
   if (
     card.classList.contains("flipped") ||
@@ -131,10 +149,7 @@ function handleCardClick(event) {
   }
 
   card.classList.add("flipped");
-
-  revealCount++;
-  const revealElement = document.getElementById("revealCount");
-  if (revealElement) revealElement.textContent = revealCount;
+  incrementRevealCount();
 
   flippedCards.push(card);
 
@@ -155,22 +170,20 @@ function checkForMatch() {
       flippedCards = [];
       matchedPairs++;
       checkWinCondition();
-    }, 500);
+    }, MATCH_DELAY);
   } else {
     setTimeout(() => {
       card1.classList.remove("flipped");
       card2.classList.remove("flipped");
       flippedCards = [];
-    }, 1000);
+    }, FLIP_BACK_DELAY);
   }
 
   checkFailureCondition();
 }
 
 function checkWinCondition() {
-  const numberOfCards = originalCards.length;
-
-  if (matchedPairs === numberOfCards) {
+  if (matchedPairs === originalCards.length) {
     initVictoryScreen();
   }
 }
@@ -183,18 +196,14 @@ function checkFailureCondition() {
 
 function doEndgameCleanup() {
   stopTimer();
-  const cardsGrid = document.getElementById("cardsGrid");
-  cardsGrid.style.display = "none";
-  while (cardsGrid.firstChild) {
-    cardsGrid.removeChild(cardsGrid.firstChild);
-  }
+  cardsGridElement.style.display = "none";
+  cardsGridElement.innerHTML = "";
 }
 
 function initVictoryScreen() {
   doEndgameCleanup();
-
-  document.getElementById("victoryScreen").style.display = "block";
-  document.getElementById("failureScreen").style.display = "none";
+  victoryScreenElement.style.display = "block";
+  failureScreenElement.style.display = "none";
 
   confetti({
     particleCount: 100,
@@ -206,16 +215,15 @@ function initVictoryScreen() {
 
 function initFailureScreen() {
   doEndgameCleanup();
-
-  document.getElementById("victoryScreen").style.display = "none";
-  document.getElementById("failureScreen").style.display = "block";
+  victoryScreenElement.style.display = "none";
+  failureScreenElement.style.display = "block";
 }
 
 function initStartScreen() {
-  document.getElementById("victoryScreen").style.display = "none";
-  document.getElementById("failureScreen").style.display = "none";
-  document.getElementById("cardsGrid").style.display = "none";
-  document.getElementById("startScreen").style.display = "block";
+  victoryScreenElement.style.display = "none";
+  failureScreenElement.style.display = "none";
+  cardsGridElement.style.display = "none";
+  startScreenElement.style.display = "block";
 }
 
 async function initGame(difficulty = "easy") {
@@ -226,16 +234,15 @@ async function initGame(difficulty = "easy") {
   seconds = 0;
   timerStarted = false;
 
-  console.log("Game start. Difficulty: ", currentDifficulty);
   clearInterval(timerInterval);
 
-  document.getElementById("victoryScreen").style.display = "none";
-  document.getElementById("failureScreen").style.display = "none";
-  document.getElementById("startScreen").style.display = "none";
-  document.getElementById("cardsGrid").style.display = "grid";
+  startScreenElement.style.display = "none";
+  victoryScreenElement.style.display = "none";
+  failureScreenElement.style.display = "none";
+  cardsGridElement.style.display = "grid";
 
-  document.getElementById("timer").textContent = "0";
-  document.getElementById("revealCount").textContent = "0";
+  timerElement.textContent = "0";
+  revealCountElement.textContent = "0";
 
   originalCards = await getCards();
   cards = shuffleCards(createCardPairs(originalCards));
