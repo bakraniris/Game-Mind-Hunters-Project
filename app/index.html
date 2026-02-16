@@ -7,23 +7,106 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div class="game-header">
+    <div class="game-header" id="singleHeader">
       <div>Time: <span id="timer">0</span></div>
       <div>Reveals: <span id="revealCount">0</span></div>
       <div>Max reveals: <span id="revealMax">0</span></div>
     </div>
     <div id="startScreen">
-      <h2>Select difficulty</h2>
-      <div class="difficulty-button-container">
-        <button onclick="initGame('easy')">Easy</button>
-        <button onclick="initGame('medium')">Medium</button>
-        <button onclick="initGame('hard')">Hard</button>
+      <h1 class="game-title">
+        <span class="title-icon">🧠</span>
+        Mind Hunters
+        <span class="title-icon">🎴</span>
+      </h1>
+      <p class="game-subtitle">Test your memory. Challenge your friends.</p>
+      <div class="setup-container">
+        <h2><span class="section-icon">🎮</span> Game Mode</h2>
+        <div class="select-button-container">
+          <button onclick="selectMode('single')" id="btnSingle">Singleplayer</button>
+          <button onclick="selectMode('multi')" id="btnMulti">Multiplayer</button>
+        </div>
+      </div>
+      <div class="setup-container">
+        <h2><span class="section-icon">⚡</span> Select Difficulty</h2>
+        <div class="select-button-container">
+          <button onclick="selectDifficulty('easy')" id="btnEasy">🟢 Easy</button>
+          <button onclick="selectDifficulty('medium')" id="btnMedium">🟡 Medium</button>
+          <button onclick="selectDifficulty('hard')" id="btnHard">🔴 Hard</button>
+          <button onclick="selectDifficulty('ultrahard')" id="btnUltraHard">🐉 Ultra Hard</button>
+          <button onclick="selectDifficulty('croatian')" id="btnCroatian">🇭🇷 Croatian Hard</button>
+        </div>
+      </div>
+      <div class="setup-container" id="multiplayerNames">
+        <h2><span class="section-icon">👥</span> Player Names</h2>
+        <div class="select-button-container">
+          <input type="text" id="player1NameInput" placeholder="Player 1 name" maxlength="15" />
+          <input type="text" id="player2NameInput" placeholder="Player 2 name" maxlength="15" />
+        </div>
+      </div>
+      <div class="setup-container">
+        <button onclick="startGame()" id="btnStartGame" class="start-game-btn">🚀 Start Game</button>
       </div>
     </div>
+    <div id="hallOfFame">
+      <h3>🏆 Hall of Fame</h3>
+      <table id="hallOfFameTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Difficulty</th>
+            <th>Time</th>
+            <th>Reveals</th>
+          </tr>
+        </thead>
+        <tbody id="hallOfFameBody"></tbody>
+      </table>
+      <p id="hallOfFameEmpty">No records yet. Be the first!</p>
+    </div>
+    <div id="battleArena">
+      <h3>⚔️ Battle Champions Arena</h3>
+      <table id="battleArenaTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Battle</th>
+            <th>Score</th>
+            <th>Winner</th>
+            <th>Difficulty</th>
+          </tr>
+        </thead>
+        <tbody id="battleArenaBody"></tbody>
+      </table>
+      <p id="battleArenaEmpty">No battles yet. Challenge a friend!</p>
+    </div>
+    <div id="turnIndicator"></div>
     <div id="cardsGrid"></div>
+    <div id="playerPanelsRow">
+      <div id="player2Panel" class="player-panel player-panel-left">
+        <h3 id="player2PanelName">Player 2</h3>
+        <p>Reveals: <span id="player2Reveals">0</span></p>
+        <p>Matched: <span id="player2Matched">0</span></p>
+      </div>
+      <div id="player1Panel" class="player-panel player-panel-right">
+        <h3 id="player1PanelName">Player 1</h3>
+        <p>Reveals: <span id="player1Reveals">0</span></p>
+        <p>Matched: <span id="player1Matched">0</span></p>
+      </div>
+    </div>
+    <div id="restartContainer">
+      <button class="restartButton" onclick="initStartScreen()">Restart Game</button>
+    </div>
     <div id="victoryScreen" class="game-over-screen">
-      <h2>You won!</h2>
-      <h2>Congratulations!</h2>
+      <h2 id="victoryTitle">You won!</h2>
+      <h2 id="victorySubtitle">Congratulations!</h2>
+      <div id="saveResultForm">
+        <p>Save your result to the Hall of Fame?</p>
+        <div class="save-result-row">
+          <input type="text" id="saveNameInput" placeholder="Enter your name" maxlength="20" />
+          <button id="saveResultBtn" onclick="saveResult()">Save</button>
+        </div>
+        <p id="saveResultMessage"></p>
+      </div>
       <button class="restartButton" onclick="initStartScreen()">Restart</button>
     </div>
     <div id="failureScreen" class="game-over-screen">
