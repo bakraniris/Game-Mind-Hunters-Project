@@ -800,4 +800,9 @@ async function initGame(difficulty = "easy") {
   }
 }
 
+const showCroatian = new URLSearchParams(window.location.search).get("show-croatian") === "true";
+if (!showCroatian) {
+  document.getElementById("btnCroatian").style.display = "none";
+}
+
 initStartScreen();
