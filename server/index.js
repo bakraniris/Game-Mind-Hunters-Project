@@ -98,8 +98,10 @@ app.post("/battles", async function (request, response) {
   response.status(201).json({ id });
 });
 
+const PORT = process.env.PORT || 3000;
+
 initTables().then(() => {
-  app.listen(3000, () => {
-    console.log("App running on http://localhost:3000. Type Ctrl+C to stop.");
+  app.listen(PORT, () => {
+    console.log(`App running on http://localhost:${PORT}. Type Ctrl+C to stop.`);
   });
 });
